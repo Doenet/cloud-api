@@ -4,36 +4,28 @@ import helmet from 'helmet';
 import dotenv from 'dotenv';
 import Logger from "./logger";
 import morganMiddleware from './morgan-middleware';
-import path from 'path';
-import cookieParser from 'cookie-parser';
 import cors from 'cors';
 
-import getAuthorize from './controllers/authorize';
-import postToken from './controllers/token';
-import getLogout from './controllers/logout';
-import { post as postEmail, verify as verifyEmail } from './controllers/email';
+import { getScore, getState } from './controllers/get';
+import { putScore, putState } from './controllers/put';
+import verifyJwt from './controllers/jwt';
+import { userCanView, userCanEdit } from './controllers/permissions';
+import { validScope, getWorksheet } from './helpers';
 
 dotenv.config();
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 const app: Express = express();
-
-app.use(cookieParser(process.env.SECRET));
 
 // I am behind nginx
 app.set('trust proxy', 1);
+app.set('token-secret', process.env.TOKEN_SECRET);
 
 app.use(morganMiddleware);
 
-app.set("views", path.join(__dirname, "../views"));
-app.set("view engine", "pug");
-
-app.use(
-    express.static(path.join(__dirname, "../public"), { maxAge: 31557600000 })
-);
-
 app.use(helmet());
 
+// TODO: fix CORS so we are send the correct CORS header based on the :domain
 const myCors = cors({
   credentials: true,
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
@@ -46,28 +38,18 @@ const myCors = cors({
 // preflight for all routes
 app.options('*', myCors);
 app.use(myCors);
-app.post(myCors);
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.get('/domains/:domain/worksheets/:worksheet/users/:user/score',
+        verifyJwt, userCanView, validScope('score'), getWorksheet, getScore);
+app.get('/domains/:domain/worksheets/:worksheet/users/:user/state',
+        verifyJwt, userCanView, validScope('state'), getWorksheet, getState);
 
-app.get('/logout', getLogout);
-app.get('/authorize', getAuthorize);
-app.post('/token', postToken);
+app.put('/domains/:domain/worksheets/:worksheet/users/:user/score',
+        bodyParser.text(), verifyJwt, userCanEdit, validScope('score'), getWorksheet, putScore);
+app.put('/domains/:domain/worksheets/:worksheet/users/:user/state',
+        bodyParser.json(), verifyJwt, userCanEdit, validScope('state'), getWorksheet, putState);
 
-app.post('/email/:email', postEmail);
-app.get('/email/:email/:nonce', verifyEmail);
-
-app.use((req: Request, res: Response, next: NextFunction) => {
-  res.status(404).render('404', { status: 404, url: req.url });
-});
-
-app.use((err: any, req: Request, res: Response) => {
-  res.status(500).render('500', {
-    status: err.status || 500,
-    error: err
-  });
-});
+app.put('/domains/:domain/worksheets/:worksheet/users/:user/score', verifyJwt, putScore);
 
 app.listen(PORT, () => {
   Logger.debug(`Server running on ${PORT}`);
