@@ -24,8 +24,10 @@ export async function putScore(req: Request, res: Response, next: NextFunction) 
 // directly from the upstream, but at least this way we can inspect
 // the content, make sure it really is JSON-encoded
 export async function putState(req: Request, res: Response, next: NextFunction) {
+  console.log('bodyHash=',res.locals.bodyHash);
+  
   const state = JSON.stringify(req.body);
-  const stateBuffer = new Buffer(state, "utf8");
+  const stateBuffer = Buffer.from(state, "utf8");
   const compressed = await gzip(stateBuffer);
   
   await client.setBuffer(`state:${res.locals.userId}:${res.locals.worksheet.hash}`, compressed);

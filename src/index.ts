@@ -10,7 +10,7 @@ import { getScore, getState } from './controllers/get';
 import { putScore, putState } from './controllers/put';
 import verifyJwt from './controllers/jwt';
 import { userCanView, userCanEdit } from './controllers/permissions';
-import { validScope, getWorksheet } from './helpers';
+import { validScope, getWorksheet, getBodySHA256, verifyBodySHA256 } from './helpers';
 
 dotenv.config();
 
@@ -47,7 +47,7 @@ app.get('/domains/:domain/worksheets/:worksheet/users/:user/state',
 app.put('/domains/:domain/worksheets/:worksheet/users/:user/score',
         bodyParser.text(), verifyJwt, userCanEdit, validScope('score'), getWorksheet, putScore);
 app.put('/domains/:domain/worksheets/:worksheet/users/:user/state',
-        bodyParser.json(), verifyJwt, userCanEdit, validScope('state'), getWorksheet, putState);
+        bodyParser.json({ verify: getBodySHA256 }), verifyBodySHA256, verifyJwt, userCanEdit, validScope('state'), getWorksheet, putState);
 
 app.put('/domains/:domain/worksheets/:worksheet/users/:user/score', verifyJwt, putScore);
 
