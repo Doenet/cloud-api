@@ -5,8 +5,8 @@ declare module 'json-work-proof' {
 
     decode( token : string ) : any;
 
-    static InvalidFormatError : Error;
-    static InvalidProofError : Error;
-    static ExpiredError : Error;
+    static InvalidFormatError : any;
+    static InvalidProofError : any;
+    static ExpiredError : any;
   }
 }
