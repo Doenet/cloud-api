@@ -5,7 +5,6 @@ export async function userCanView(req: Request, res: Response, next: NextFunctio
   
   if (userId !== req.params.user) {
     // TODO: perhaps some users ARE permitted to view scores of other users?
-    console.log(res.locals.jwt,req.params.user);
     res.status(401).send('Not authorized');
     return;
   }

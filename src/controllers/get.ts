@@ -6,8 +6,6 @@ const client = new Redis();
 export async function getScore(req: Request, res: Response, next: NextFunction) {
   let score = await client.zscore(`user-score:${res.locals.userId}`, res.locals.worksheet.hash);
 
-  console.log(score);
-  
   if (score === null) {
     res.json({ score: null });
   } else {
