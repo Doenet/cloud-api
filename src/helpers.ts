@@ -16,9 +16,6 @@ export function getBodySHA256(req: Request, res: Response, buffer: Buffer) {
 
 export async function verifyBodySHA256(req: Request, res: Response, next: NextFunction) {
   const header = req.header('X-Body-SHA256');
-
-  console.log('theHeader',header);
-  console.log('bodyHash',res.locals.bodyHash);
   
   if (res.locals.bodyHash !== header) {
     res.status(500).send('X-Body-SHA256 does not match SHA256(req.body)');

@@ -8,7 +8,12 @@ import Redis from 'ioredis';
 const client = new Redis();
 
 export async function putScore(req: Request, res: Response, next: NextFunction) {
-  const score = parseFloat(req.body);
+  const score = req.body.score;
+  
+  if (typeof score !== 'number') {
+    res.status(500).send('score must be a float');
+    return;
+  }
 
   await client.multi()
     .zadd(`user-score:${res.locals.userId}`, 'GT', score, res.locals.worksheet.hash)
@@ -24,8 +29,6 @@ export async function putScore(req: Request, res: Response, next: NextFunction) 
 // directly from the upstream, but at least this way we can inspect
 // the content, make sure it really is JSON-encoded
 export async function putState(req: Request, res: Response, next: NextFunction) {
-  console.log('bodyHash=',res.locals.bodyHash);
-  
   const state = JSON.stringify(req.body);
   const stateBuffer = Buffer.from(state, "utf8");
   const compressed = await gzip(stateBuffer);
