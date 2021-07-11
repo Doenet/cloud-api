@@ -1,7 +1,7 @@
 with import <nixpkgs> {};
 
 mkYarnPackage rec {
-    name = "id-server";
+    name = "api-server";
     src = ./.;
     packageJSON = ./package.json;
     yarnLock = ./yarn.lock;
@@ -11,9 +11,9 @@ mkYarnPackage rec {
     '';
 
     meta = with pkgs.lib; {
-      description = "id.doenet.cloud webservices";
+      description = "api.doenet.cloud webservices";
       license = licenses.agpl3;
-      homepage = "https://github.com/Doenet/cloud-id";
+      homepage = "https://github.com/Doenet/cloud-api";
       maintainers = with maintainers; [ kisonecat ];
       platforms = platforms.linux;
     };
